@@ -1,0 +1,25 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.mulesoft.portal.sync'
+version = '0.0.1-SNAPSHOT'
+
+description = """"""
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2"}
+     maven { url "http://repo.jenkins-ci.org/releases"}
+}
+dependencies {
+    compile group: 'org.jboss.resteasy', name: 'resteasy-client', version:'3.0.10.Final'
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version:'1.1.1'
+    compile group: 'org.kohsuke', name: 'github-api', version:'1.59'
+    compile group: 'org.freemarker', name: 'freemarker', version:'2.3.14'
+    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version:'3.7.0.201502260915-r'
+}

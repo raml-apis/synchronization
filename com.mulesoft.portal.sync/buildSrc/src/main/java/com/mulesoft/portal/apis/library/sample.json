@@ -1,0 +1,114 @@
+{
+	"summary" :
+	"Automate IT services and create connectivity between ServiceNow and other CRM, HCM, ERP applications and services, on-premises and in the cloud.\n\n"
+	,
+	"video_caption" : null ,
+	"youtube_video_url" : "" ,
+	"icon_url" :
+	"http:\/\/www.mulesoft.com\/guidelines\/images\/guidelines\/graphics\/iapps-connectors\/icon-servicenow-big.png"
+	,
+	"state" : "published" ,
+	"type" : {
+		"id" : 2 ,
+		"tos" : null ,
+		"recipe" : {
+			"body" : [ "header" , "video" , "description" , "versions" ]
+		} ,
+		"name" : "connector" ,
+		"active" : false ,
+		"versions_recipe" : [ [ {
+			"attribute" : "object_version" ,
+			"label" : "Connector version"
+		} , {
+			"attribute" : "mule_version_id" ,
+			"label" : "Runtime version"
+		} , {
+			"optional" : true ,
+			"attribute" : "api_version" ,
+			"label" : "Notes"
+		} ] , [ {
+			"options" : [ {
+				"placeholder" : "{pluginName}" ,
+				"attribute" : "feature_id" ,
+				"hint" :
+				"Feature Id (org.mule.tooling.ui.extension.{pluginName}.feature.group)" ,
+				"label" : "Install"
+			} , {
+				"placeholder" : "http:\/\/web.site.com" ,
+				"attribute" : "website" ,
+				"hint" : "Website" ,
+				"label" : "Link" ,
+				"type" : "url"
+			} , {
+				"label" : "No link"
+			} ]
+		} ] , [ {
+			"optional" : true ,
+			"attribute" : "doc_url" ,
+			"label" : "Documentation URL" ,
+			"type" : "url"
+		} ] ] ,
+		"actions" : {
+			"install" : {
+				"active" : true ,
+				"label" : "Install in Studio"
+			} ,
+			"open" : {
+				"active" : false ,
+				"label" : "Open in Studio"
+			} ,
+			"gotolink" : {
+				"active" : true ,
+				"label" : "Go to link"
+			} ,
+			"api" : {
+				"active" : false ,
+				"label" : ""
+			} ,
+			"download" : {
+				"active" : false ,
+				"label" : "Download"
+			}
+		}
+	} ,
+	"type_id" : 2 ,
+	"id" : 138 ,
+	"versions" : [ {
+		"id" : 798 ,
+		"isSuggested" : true ,
+		"muleVersion" : {
+			"id" : "3.5" ,
+			"connectors_update_site_url" :
+			"http:\/\/repository.mulesoft.org\/connectors\/releases\/3.5.0" ,
+			"doc_url" :
+			"http:\/\/www.mulesoft.org\/documentation\/display\/current\/Home" ,
+			"feature_id" : null ,
+			"active" : true
+		} ,
+		"object_version" : "4.0.0.201411071805" ,
+		"doc_url" :
+		"http:\/\/www.mulesoft.org\/documentation\/display\/current\/ServiceNow+Connector+4.0+Release+Notes"
+		,
+		"website" : null ,
+		"mule_version_id" : "3.5" ,
+		"download_url" : null ,
+		"feature_id" :
+		"org.mule.tooling.ui.extension.servicenow.3.5.0.feature.group" ,
+		"object_id" : 138 ,
+		"api_version" : null ,
+		"actions" : [ ]
+	} ] ,
+	"organization" : {
+		"id" : 1 ,
+		"name" : "MuleSoft"
+	} ,
+	"updated_at" : "2015-01-21T01:20:02.269Z" ,
+	"organization_id" : 1 ,
+	"description" :
+	"##Description\nTransform your IT infrastructure by creating connectivity between ServiceNow and numerous applications, systems and services, on-premises and in the cloud with the Anypoint™ ServiceNow connector from MuleSoft. \n\nServiceNow is a cloud IT service management solution that transforms enterprise IT by automating and managing IT service relationships to create a single system of record. The Anypoint ServiceNow connector allows businesses to sync ServiceNow data and extend IT service management (ITSM) capabilities to SaaS and on-premises applications like Salesforce, SAP, Workday, and Microsoft Dynamics, helping with data migration and replication, application integration, and consolidation. \n\nWith the ServiceNow connector, organizations can fully integrate business processes across HR, legal, procurement, operations, marketing, and facilities departments. Creating connectivity within and outside the enterprise is quick and simple with bi-directional connectivity to over 120 Anypoint connectors. \n\nMuleSoft\u2019s Anypoint ServiceNow connector allows businesses to create instant API connectivity with the ServiceNow API, allowing them to quickly and easily interface with ServiceNow from within the MuleSoft Anypoint Platform.\n\n##Latest release\n[ServiceNow Connector 4.0 Release Notes](http:\/\/www.mulesoft.org\/documentation\/display\/current\/ServiceNow+Connector+4.0+Release+Notes)\n\n##Templates\n[View all ServiceNow templates](https:\/\/mulesoft.com\/library\/#!\/?types=template&searchTerm=ServiceNow)"
+	,
+	"name_url" : "servicenow-integration-connector" ,
+	"name" : "ServiceNow Connector" ,
+	"owner" : "darko.vukovic" ,
+	"created_at" : "2014-10-29T23:29:32.580Z"
+}

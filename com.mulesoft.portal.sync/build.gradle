@@ -1,0 +1,64 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.mulesoft.portal.sync'
+version = '0.0.1-SNAPSHOT'
+
+description = """"""
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+import com.mulesoft.portal.apis.github.GitHubConnector;
+import com.mulesoft.portal.apis.sync.SynchronizationManager;
+import com.mulesoft.portal.client.PortalClient;
+import com.mulesoft.portal.apis.hlm.APIProject;
+import com.mulesoft.portal.apis.hlm.ProjectBuilder;
+import com.mulesoft.portal.test.Test;
+import com.mulesoft.portal.test.DirGrabber;
+
+Map ENV = System.getenv()
+String ghPassword = ENV['GITHUBPASS']
+String ghLogin = ENV['GITHUBLOGIN']
+String portalPassword = ENV['PORTALPASSWORD']
+String portalLogin = ENV['PORTALLOGIN']
+//APIProject build = new ProjectBuilder().build(new File(projectDir.getParentFile().getParentFile(),"apis"));
+task testMessage() << {
+	String fileList = new DirGrabber().listFiles()
+    new Test().sendMessage("Test message from Jenkins !!!\n\n" + fileList);
+}
+task cleanPortal() << {
+    com.mulesoft.portal.apis.sync.SynchronizationManager v=new com.mulesoft.portal.apis.sync.SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword,build);
+    v.removeAllApisFromPortal();
+}
+task syncPortal() << {
+    com.mulesoft.portal.apis.sync.SynchronizationManager v=new com.mulesoft.portal.apis.sync.SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword,build);
+    println("Starting api sync");
+    v.syncAllApis();
+    println("API sync completed");
+}
+task syncStagingPortal() << {
+    com.mulesoft.portal.apis.sync.SynchronizationManager v=new com.mulesoft.portal.apis.sync.SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword,build);
+    v.setStaging(true);
+    println("Starting api sync staging");
+    v.syncAllApis();
+    println("API sync completed");
+}
+task syncAPI() << {
+    APIProject build2 = new ProjectBuilder().buildForOneApiFolder(new File(new File(projectDir.getParentFile().getParentFile(),"apis"),apiFolder));
+    
+    com.mulesoft.portal.apis.sync.SynchronizationManager v=new com.mulesoft.portal.apis.sync.SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword,build2);
+    v.setCleanNotExistingApis(false);
+    println("Starting api sync");
+    v.syncAllApis();
+    println("API sync completed");
+}
+
+
