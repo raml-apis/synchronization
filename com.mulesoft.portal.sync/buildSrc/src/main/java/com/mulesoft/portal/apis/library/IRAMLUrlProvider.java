@@ -1,8 +1,8 @@
 package com.mulesoft.portal.apis.library;
 
-import com.mulesoft.portal.apis.hlm.API;
+import com.mulesoft.portal.apis.hlm.APIVersion;
 
 public interface IRAMLUrlProvider {
 
-	public String getRAWUrl(API model);
+	public String getRAWUrl(APIVersion model);
 }

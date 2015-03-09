@@ -20,7 +20,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.mulesoft.portal.apis.utils.SimpleClient;
-import com.mulesoft.portal.client.APIModel.APIVersion;
+import com.mulesoft.portal.client.APIModel.PortalAPIVersion;
 
 public class PortalClient extends SimpleClient{
 
@@ -61,7 +61,7 @@ public class PortalClient extends SimpleClient{
 		delete("/apiplatform/repository/apis/" + id);
 	}
 
-	public APIModel[] getAPIS() {
+	public APIModel[] getAPIs() {
 		JSONObject json = getJSON("/apiplatform/repository/apis");
 		JSONArray object = (JSONArray) json.get("apis");
 		APIModel[] result = new APIModel[object.size()];
@@ -73,16 +73,16 @@ public class PortalClient extends SimpleClient{
 			JSONArray va = (JSONArray) obj.get("versions");
 			if (va != null) {
 				for (int i = 0; i < va.size(); i++) {
-					APIVersion e = load.new APIVersion();
+					PortalAPIVersion e = load.new PortalAPIVersion();
 					e.load((JSONObject) va.get(i));
 					load.versionList.add(e);
-					load.version = e.name;
+					load.version = e.getName();
 				}
 			}
 		}
 		return result;
 	}
-	public  void updateVersion(APIVersion version, String description){
+	public  void updateVersion(PortalAPIVersion version, String description){
 		JSONObject json = getJSON("/apiplatform/repository/apis");
 		JSONArray object = (JSONArray) json.get("apis");
 		APIModel[] result = new APIModel[object.size()];
@@ -94,7 +94,7 @@ public class PortalClient extends SimpleClient{
 				JSONArray va = (JSONArray) obj.get("versions");
 				if (va != null) {
 					for (int i = 0; i < va.size(); i++) {
-						APIVersion e = load.new APIVersion();
+						PortalAPIVersion e = load.new PortalAPIVersion();
 						e.load((JSONObject) va.get(i));
 						if (e.id.longValue()==version.id) {
 							JSONObject vobj=(JSONObject) va.get(i);
@@ -107,7 +107,7 @@ public class PortalClient extends SimpleClient{
 			}
 		}
 	}
-	public  APIVersion getOrCreateStagingVersion(APIVersion version){
+	public  PortalAPIVersion getOrCreateStagingVersion(PortalAPIVersion version){
 		JSONObject json = getJSON("/apiplatform/repository/apis");
 		JSONArray object = (JSONArray) json.get("apis");
 		APIModel[] result = new APIModel[object.size()];
@@ -119,26 +119,27 @@ public class PortalClient extends SimpleClient{
 				JSONArray va = (JSONArray) obj.get("versions");
 				if (va != null) {
 					for (int i = 0; i < va.size(); i++) {
-						APIVersion e = load.new APIVersion();
+						PortalAPIVersion e = load.new PortalAPIVersion();
 						e.load((JSONObject) va.get(i));
-						if (e.name.equals(version.name+"-staging")) {
+						if (e.getName().equals(version.getName()+"-staging")) {
 							System.out.println("Found staging version for:" + version.getAPIModel().name);
 							return e;
 						}
 					}
 					for (int i = 0; i < va.size(); i++) {
-						APIVersion e = load.new APIVersion();
+						PortalAPIVersion e = load.new PortalAPIVersion();
 						e.load((JSONObject) va.get(i));
 						if (e.id.longValue()==version.id) {
 							JSONObject vobj=(JSONObject) va.get(i);
 							vobj.remove("id");
-							vobj.put("name",version.name+"-staging");
+							vobj.put("name",version.getName()+"-staging");
 							//vobj.put("description",vobj.get("de"));
 							System.out.println("Creating staging version for:" + version.getAPIModel().name);
 							JSONObject obj2=postJSON("/apiplatform/repository/apis/" + version.getAPIModel().id
 									+ "/versions/" , vobj);
-							e = load.new APIVersion();
+							e = load.new PortalAPIVersion();
 							e.load((JSONObject) obj2);
+							load.addVersion(e);
 							return e;
 						}
 					}
@@ -150,7 +151,7 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addRootRAML(APIVersion version, String content) {
+	public void addRootRAML(PortalAPIVersion version, String content) {
 		JSONObject object = new JSONObject();
 		APIModel mdl = version.getAPIModel();
 		object.put("apiId", mdl.id);
@@ -163,11 +164,11 @@ public class PortalClient extends SimpleClient{
 				+ "/versions/" + version.id + "/addRootRaml", object);
 	}
 
-	public void writeFolder(APIVersion version, File fld, HashSet<String> skip) {
+	public void writeFolder(PortalAPIVersion version, File fld, HashSet<String> skip) {
 		writeFolder(version, fld, 0, skip);
 	}
 
-	public void writeFolder(APIVersion version, File fld, long parentId,
+	public void writeFolder(PortalAPIVersion version, File fld, long parentId,
 			HashSet<String> skip) {
 		File[] listFiles = fld.listFiles();
 		for (File f : listFiles) {
@@ -193,7 +194,7 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addFileRAML(APIVersion version, String title, String content,
+	public void addFileRAML(PortalAPIVersion version, String title, String content,
 			long folderId) {
 		APIModel mdl = version.getAPIModel();
 		JSONObject object = new JSONObject();
@@ -212,7 +213,7 @@ public class PortalClient extends SimpleClient{
 		// https://127.0.0.1:8443/apiplatform/repository/apis/12/versions/31/addRootRaml
 	}
 
-	public APIFile[] getFiles(APIVersion version) {
+	public APIFile[] getFiles(PortalAPIVersion version) {
 		JSONArray postJSON = getJSONArray("/apiplatform/repository/apis/"
 				+ version.getAPIModel().id + "/versions/" + version.id
 				+ "/files");
@@ -224,7 +225,7 @@ public class PortalClient extends SimpleClient{
 		return files;
 	}
 
-	public String getFileContent(APIVersion version, APIFile file) {
+	public String getFileContent(PortalAPIVersion version, APIFile file) {
 		JSONObject postJSON = getJSON("/apiplatform/repository/apis/"
 				+ version.getAPIModel().id + "/versions/" + version.id
 				+ "/files/" + file.getId());
@@ -232,7 +233,7 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public void setFileRAML(APIVersion version, APIFile fl, String content) {
+	public void setFileRAML(PortalAPIVersion version, APIFile fl, String content) {
 		APIModel mdl = version.getAPIModel();
 		JSONObject object = new JSONObject();
 		// {"apiId":12,"apiVersionId":31,"apiName":"dummy","isDirectory":false,"name":"api.raml","data":"#%RAML 0.8\ntitle: test\nversion: dummy"}
@@ -253,7 +254,7 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public long addFolder(APIVersion version, String title, long folderId) {
+	public long addFolder(PortalAPIVersion version, String title, long folderId) {
 		JSONObject object = new JSONObject();
 		// {"apiId":12,"apiVersionId":31,"apiName":"dummy","isDirectory":false,"name":"api.raml","data":"#%RAML 0.8\ntitle: test\nversion: dummy"}
 		object.put("apiId", version.getAPIModel().id);
@@ -280,7 +281,7 @@ public class PortalClient extends SimpleClient{
 		// https://127.0.0.1:8443/apiplatform/repository/apis/12/versions/31/addRootRaml
 	}
 
-	public void createAPIPortal(APIVersion version) {
+	public void deleteAPIPortal(PortalAPIVersion version) {
 		APIModel mdl = version.getAPIModel();
 		JSONObject postJSON = postJSON("/apiplatform/repository/apis/" + mdl.id
 				+ "/versions/" + version.id + "/portal", null);		
@@ -293,37 +294,39 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createAPIPortalPage(APIVersion version,String title,
+	public void createAPIPortalPage(PortalAPIVersion version,String title,
 			String content) {
 		JSONObject object = new JSONObject();
 		object.put("type", "markdown");
 		object.put("name", title);
 		object.put("draftName", title);
 		object.put("data", content);
-		JSONObject postJSON = postJSON("/apiplatform/repository/apis/" + version.getAPIModel().id
-				+ "/versions/" + version.id + "/portal/pages", object);
+		String url = "/apiplatform/repository/apis/" + version.getAPIModel().id
+				+ "/versions/" + version.id + "/portal/pages";
+		JSONObject postJSON = postJSON(url, object);
 		//System.out.println(postJSON);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void updateAPIPortalPage(APIVersion version,String title,
+	public void updateAPIPortalPage(PortalAPIVersion version,String title,
 			String content,Long pageId) {
 		JSONObject object = new JSONObject();
 		object.put("type", "markdown");
 		object.put("name", title);
 		object.put("draftName", title);
 		object.put("data", content);
-		JSONObject postJSON = putJSON("/apiplatform/repository/apis/" + version.getAPIModel().id
-				+ "/versions/" + version.id + "/portal/pages/"+pageId, object);
+		String url = "/apiplatform/repository/apis/" + version.getAPIModel().id
+				+ "/versions/" + version.id + "/portal/pages/"+pageId;
+		JSONObject postJSON = putJSON(url, object);
 		//System.out.println(postJSON);
 	}
-	public void deleteAPIPortalPage(APIVersion version,Long pageId) {
+	public void deleteAPIPortalPage(PortalAPIVersion version,Long pageId) {
 		delete("/apiplatform/repository/apis/" + version.getAPIModel().id
 				+ "/versions/" + version.id + "/portal/pages/"+pageId);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createAPIPortalSection(APIVersion version, 
+	public void createAPIPortalSection(PortalAPIVersion version, 
 			String description) {
 		JSONObject object = new JSONObject();
 		object.put("type", "header");
@@ -335,43 +338,45 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createAPIPortalNotebook(APIModel mdl, APIVersion version,
+	public void createAPIPortalNotebook(APIModel mdl, PortalAPIVersion version,
 			String title, String content) {
 		JSONObject object = new JSONObject();
 		object.put("type", "notebook");
 		object.put("name", title);
 		object.put("draftName", title);
 		object.put("data", content);
-		postJSON("/apiplatform/repository/apis/" + mdl.id + "/versions/"
-				+ version.id + "/portal/pages", object);
+		String url = "/apiplatform/repository/apis/" + version.getAPIModel().getId()
+				+ "/versions/" + version.id + "/portal/pages";
+		postJSON(url, object);	
 	}
 
 	public APIModel createNewAPI(APIModel mdl) {
+		JSONObject json = mdl.toJSON();
 		JSONObject postJSON = postJSON("/apiplatform/repository/apis",
-				mdl.toJSON());
+				json);
 		JSONArray arr = (JSONArray) postJSON.get("versions");
 		if (arr == null) {
 			return null;
 		}
 		for (int a = 0; a < arr.size(); a++) {
 			JSONObject object = (JSONObject) arr.get(a);
-			APIVersion version = mdl.new APIVersion();
+			PortalAPIVersion version = mdl.new PortalAPIVersion();
 			version.id = (Long) object.get("id");
-			version.name = (String) object.get("name");
+			version.setName((String) object.get("name"));
 			mdl.versionList.add(version);
 		}
 		mdl.id = (Long) postJSON.get("id");
 		return mdl;
 	}
 
-	public void deleteFile(APIVersion version, APIFile fl) {
+	public void deleteFile(PortalAPIVersion version, APIFile fl) {
 		APIModel mdl = version.getAPIModel();
 		delete("/apiplatform/repository/apis/" + mdl.id
 				+ "/versions/" + version.id + "/files/" + fl.getId());		
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createAPIPortalReference(APIVersion version, String string) {
+	public void createAPIPortalReference(PortalAPIVersion version, String string) {
 		JSONObject object = new JSONObject();
 		object.put("type", "console");
 		object.put("name", string);
@@ -380,7 +385,7 @@ public class PortalClient extends SimpleClient{
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createAPIPortalSyncStatus(APIVersion version, 
+	public void createAPIPortalSyncStatus(PortalAPIVersion version, 
 			String sync) {
 		JSONObject object = new JSONObject();
 		object.put("type", "markdown");
@@ -390,7 +395,7 @@ public class PortalClient extends SimpleClient{
 		postJSON("/apiplatform/repository/apis/" + version.getAPIModel().getId()
 				+ "/versions/" + version.id + "/portal/pages", object);		
 	}
-	public String getSyncInfo(APIVersion lastVersion) {
+	public String getSyncInfo(PortalAPIVersion lastVersion) {
 		try{
 		JSONObject json = getJSON("/apiplatform/repository/apis/" + lastVersion.getAPIModel().getId()
 				+ "/versions/" + lastVersion.id + "/portal");
@@ -414,7 +419,7 @@ public class PortalClient extends SimpleClient{
 		}
 	}
 	
-	public void deleteAllPages(APIVersion lastVersion) {
+	public void deleteAllPages(PortalAPIVersion lastVersion) {
 		try{
 		JSONObject json = getJSON("/apiplatform/repository/apis/" + lastVersion.getAPIModel().getId()
 				+ "/versions/" + lastVersion.id + "/portal");
@@ -427,6 +432,20 @@ public class PortalClient extends SimpleClient{
 		}catch (ProcessingException e) {
 			e.printStackTrace();
 		}
+	}
+
+
+	public PortalAPIVersion createNewVersion(APIModel apiModel, String verName,	String description)
+	{
+		JSONObject json = new JSONObject();
+		json.put("name", verName);
+		JSONObject object = postJSON("/apiplatform/repository/apis/" + apiModel.getId() + "/versions",json);
+		
+		PortalAPIVersion version = apiModel.new PortalAPIVersion();
+		version.id = (Long) object.get("id");
+		version.setName((String) object.get("name"));
+		apiModel.versionList.add(version);
+		return version;
 	}
 
 	

@@ -1,75 +1,81 @@
 package com.mulesoft.portal.apis.github;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 
-import org.kohsuke.github.GHBranch;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHCommit.File;
+import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
-import org.kohsuke.github.PagedIterable;
 
 public class GitHubConnector {
-
-	private GHRepository repository;
-
-	public GitHubConnector(String repo,String userName,String password) throws IOException{
-		GitHub connectUsingPassword = GitHub.connectUsingPassword(
-				userName, password);
-		repository = connectUsingPassword
-				.getRepository(repo);
-	}
 	
-	public String getCurrentSHA() throws IOException{
-		Map<String, GHBranch> branches = repository.getBranches();
-		GHBranch ghBranch = branches.get("master");
-		return ghBranch.getSHA1();				
-	}
-	protected HashMap<String,HashSet<String>>files=new HashMap<String,HashSet<String>>(); 
-	
-	public HashSet<String>calculateChangedPaths(String lastSyncedSHA) throws IOException{
-		PagedIterable<GHCommit> listCommits = repository.listCommits();
-		ArrayList<GHCommit> changed = new ArrayList<GHCommit>();
-		String requiredSHA1 = lastSyncedSHA;
-		for (GHCommit c : listCommits) {			
-			if (c.getSHA1() .equals(requiredSHA1)) {
-				break;
-			}
-			changed.add(c);
-		}
-		HashSet<String> changedPaths = new HashSet<String>();
-		for (GHCommit c : changed) {
-			String sha1 = c.getSHA1();
-			HashSet<String> lcp = getPaths(sha1);
-			changedPaths.addAll(lcp);
-		}
-		return changedPaths;
-	}
 
-	private HashSet<String> getPaths(String sha1) throws IOException {
-		if (files.containsKey(sha1)){
-			return files.get(sha1);
-		}
-		HashSet<String> lcp = new HashSet<String>();
+	public void cloneRepository(String repoPath, String branch, File workdir){
 		
-		GHCommit commit = repository.getCommit(sha1);
-		List<File> files = commit.getFiles();
-		for (File q : files) {
-			URL rawUrl = q.getRawUrl();
-			String path = rawUrl.getPath();
-			path = path.substring(path.indexOf("/raw/") + 5);
-			path = path.substring(path.indexOf('/'));
-			lcp.add(path);
+		CloneCommand cloneRepository = Git.cloneRepository();
+		cloneRepository.setCredentialsProvider(credentialsProvider);
+
+		cloneRepository.setBranch(branch);
+
+		cloneRepository.setDirectory(workdir);
+//		cloneRepository.setProgressMonitor(gitMonitor);
+		cloneRepository.setRemote("origin");
+		cloneRepository.setURI(repoPath);
+		cloneRepository.setTimeout(600);
+		cloneRepository.setCloneAllBranches(false);
+		cloneRepository.setCloneSubmodules(true);
+
+		Git git;
+		try {
+			git = cloneRepository.call();
+			Repository repo = git.getRepository();
+		} catch (InvalidRemoteException e) {
+			e.printStackTrace();
+		} catch (TransportException e) {
+			e.printStackTrace();
+		} catch (GitAPIException e) {
+			e.printStackTrace();
 		}
-		this.files.put(sha1, lcp);
-		return lcp;
 	}
 	
+	private UsernamePasswordCredentialsProvider credentialsProvider;
+	
+	private GitHub gitHub;
+
+	public GitHubConnector(GitHubCredentials credentials){
+		
+		credentialsProvider = new UsernamePasswordCredentialsProvider(
+				credentials.getLogin(), credentials.getPassword());
+		
+		try {
+			gitHub = GitHub.connectUsingPassword(credentials.getLogin(), credentials.getPassword());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public GitHubRepository getRepository(GitApiLocation location){
+		
+		String repoPath = location.getRepoPath();
+		String repoFullPath = location.getRepoFullPath();
+		try {
+			
+			GHRepository repository = gitHub.getRepository(repoPath);
+			GitHubRepository result = new GitHubRepository(repository, repoFullPath, repoPath);
+			return result;
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+		
 	
 }

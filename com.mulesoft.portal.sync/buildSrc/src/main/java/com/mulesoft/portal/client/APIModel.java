@@ -1,7 +1,10 @@
 package com.mulesoft.portal.client;
 
 import java.util.ArrayList;
+
 import org.json.simple.JSONObject;
+
+import com.mulesoft.portal.client.APIModel.PortalAPIVersion;
 
 public class APIModel extends SimpleToJSON {
 
@@ -25,25 +28,42 @@ public class APIModel extends SimpleToJSON {
 
 	public String getVersion() {
 		if (version==null){
-			return getLastVersion().name;
+			return getLastVersion().getName();
 		}
 		return version;
 	}
+	
+	public PortalAPIVersion getVersion(String name) {
+		for(PortalAPIVersion ver : versionList){
+			if(ver.getName().equals(name)){
+				return ver;
+			}
+		}
+		return null;
+	}
 
-	protected ArrayList<APIVersion> versionList = new ArrayList<APIVersion>();
+	protected ArrayList<PortalAPIVersion> versionList = new ArrayList<PortalAPIVersion>();
 
 	protected String version;
 
 	public APIModel() {
 	}
 
-	public class APIVersion extends SimpleToJSON{
+	public class PortalAPIVersion extends SimpleToJSON{
 		Long id;
-		String name;
+		private String name;
 		String description;
 
 		public APIModel getAPIModel() {
 			return APIModel.this;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
 		}
 
 
@@ -74,12 +94,16 @@ public class APIModel extends SimpleToJSON {
 		return json;
 	}
 
-	public APIVersion getLastVersion() {
-		for (APIVersion v:versionList){
-			if (!v.name.endsWith("-staging")){
+	public PortalAPIVersion getLastVersion() {
+		for (PortalAPIVersion v:versionList){
+			if (!v.getName().endsWith("-staging")){
 				return v;
 			}
 		}
 		return versionList.get(versionList.size()-1);
+	}
+
+	public void addVersion(PortalAPIVersion e) {
+		this.versionList.add(e);		
 	}
 }

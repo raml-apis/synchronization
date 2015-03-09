@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.mulesoft.portal.apis.hlm.API;
+import com.mulesoft.portal.apis.hlm.APIVersion;
 import com.mulesoft.portal.apis.hlm.APIProject;
 import com.mulesoft.portal.apis.utils.Utils;
 
@@ -56,7 +57,7 @@ public class LibrarySync {
 		return toSync.toArray(new API[toSync.size()]);
 	}
 
-	private void doSync(API a, LibraryNode apiModel) {
+	private void doSync(APIVersion a, LibraryNode apiModel) {
 		LibraryNode library = toLibrary(a);
 		if (library.equals(apiModel)){
 			return;
@@ -65,7 +66,7 @@ public class LibrarySync {
 		client.updateOrCreateNode(library);
 	}
 
-	private LibraryNode toLibrary(API qa) {
+	private LibraryNode toLibrary(APIVersion qa) {
 		LibraryNode libraryNode = new LibraryNode();
 		libraryNode.setTitle(qa.getName());
 		libraryNode.setDescription(qa.getDescription());

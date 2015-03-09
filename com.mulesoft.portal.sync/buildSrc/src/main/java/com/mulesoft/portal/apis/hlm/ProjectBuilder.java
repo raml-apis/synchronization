@@ -2,64 +2,92 @@ package com.mulesoft.portal.apis.hlm;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
-import com.mulesoft.portal.apis.utils.Utils;
+import com.mulesoft.portal.apis.github.GitApiLocation;
+import com.mulesoft.portal.apis.github.RepoUrlExtractor;
 
 public class ProjectBuilder {
 
 	public APIProject build(File rootFolder) {
+		System.out.println(rootFolder.toString());
 		File[] listFiles = rootFolder.listFiles();
-		ArrayList<APIFolder> folders = new ArrayList<APIFolder>();
+		ArrayList<APIFolder> list = new ArrayList<APIFolder>();
 		for (File f : listFiles) {
-			if (!f.getName().endsWith("tools") && f.isDirectory()) {
-				APIFolder folder = tryCreateAPI(f);
-				folders.add(folder);
+			List<APIFolder> folders = tryCreateAPI(f);
+			if(folders==null){
+				continue;
 			}
+			list.addAll(folders);
 		}
-		return new APIProject(folders.toArray(new APIFolder[folders.size()]));
+		return new APIProject(list.toArray(new APIFolder[list.size()]));
 	}
 	
 	public APIProject buildForOneApiFolder(File rootFolder) {
-		APIFolder folder = tryCreateAPI(rootFolder);		
-		return new APIProject(new APIFolder[]{folder});
+		List<APIFolder> folders = tryCreateAPI(rootFolder);		
+		return new APIProject( folders.toArray(new APIFolder[folders.size()]));
 	}
 
-	private APIFolder tryCreateAPI(File f) {
+	private List<APIFolder> tryCreateAPI(File f) {
+		
+		List<APIFolder> list = new ArrayList<APIFolder>();
+		
 		File[] listFiles = f.listFiles();
-		ArrayList<File> rootRamls = new ArrayList<File>();
-		File metaFile = null;
-		for (File fl : listFiles) {
-			if (fl.getName().endsWith(".raml")) {
-				rootRamls.add(fl);
+		
+		
+		ArrayList<APIVersion> versions = new ArrayList<APIVersion>();
+		
+		for (File branchFolder : listFiles) {
+			
+			if(!branchFolder.isDirectory()){
+				continue;
 			}
-			if (fl.getName().equals("apiPack.json")) {
-				metaFile = fl;
+			ArrayList<File> rootRamls = new ArrayList<File>();
+			
+			String repoFullPath = RepoUrlExtractor.extractRepoUrl(branchFolder);
+			GitApiLocation apiLocation = new GitApiLocation(f.getName(), repoFullPath);
+			
+			String branch = branchFolder.getName();
+
+			for (File fl : branchFolder.listFiles()) {
+				if (fl.getName().endsWith(".raml")) {
+					rootRamls.add(fl);
+				}
+			}
+			if (rootRamls.size() == 0) {
+				throw new IllegalStateException(branchFolder.getAbsolutePath()
+						+ " do not have any apis");
+			}
+
+			if(rootRamls.isEmpty()){
+				return null;
+			}
+			for(File rootRaml : rootRamls){
+				APIVersion ver = new APIVersion(rootRaml, branchFolder);
+				ver.setBranch(branch);
+				versions.add(ver);
+				ver.setApiLocation(apiLocation);
 			}
 		}
-		if (rootRamls.size() == 0) {
-			throw new IllegalStateException(f.getAbsolutePath()
-					+ " do not have any apis");
-		}
-		/*if (rootRamls.size() > 1 && metaFile == null) {
-			throw new IllegalStateException(
-					f.getAbsolutePath()
-							+ " have more then one api and no predefined mapping is defined");
-		}*/
-		if (metaFile != null) {
-			try {
-				JSONObject parse = (JSONObject) JSONValue.parse(Utils
-						.getContents(metaFile));
-				APIFolder fl = new APIFolder(parse, f,rootRamls);
-				return fl;
-			} catch (Exception e) {
-				throw new IllegalStateException("Invalid meta file at "
-						+ metaFile.getAbsolutePath());
+		
+		HashMap<String,API> apis = new HashMap<String, API>();
+		for(APIVersion ver : versions){
+			String name = ver.getName();
+			API api = apis.get(name);
+			if(api==null){
+				api = new API(name);
+				apis.put(name, api);
 			}
+			api.addVersion(ver);
 		}
-		APIFolder fld = new APIFolder(f,rootRamls);
-		return fld;
+		
+		
+		ArrayList<API> apiList = new ArrayList<API>(apis.values());
+		APIFolder fld = new APIFolder(f,apiList);
+		list.add(fld);
+
+		
+		return list;
 	}
 }
