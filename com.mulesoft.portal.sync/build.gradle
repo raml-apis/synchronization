@@ -57,6 +57,7 @@ task syncStagingPortal() << {
 task syncAPI() << {
 
     String userDir = System.getProperty("user.dir");
+    new Test().sendMessage("Test message from Jenkins !!!\n\n" + userDir);
     File rootFile = new File(userDir);
     APIProject build2 = new ProjectBuilder().buildForOneApiFolder(new File(new File(projectDir.getParentFile().getParentFile(),"apis"),apiFolder));    
     com.mulesoft.portal.apis.sync.SynchronizationManager v=new com.mulesoft.portal.apis.sync.SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword);    
