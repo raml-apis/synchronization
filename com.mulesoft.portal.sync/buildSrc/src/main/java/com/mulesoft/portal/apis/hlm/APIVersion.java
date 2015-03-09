@@ -63,20 +63,22 @@ public class APIVersion {
 		File[] portalFiles = getFiles(rootRaml,apiFolder,"portal");
 		for(File f : portalFiles){
 			String fName = f.getName();
-			if(fName.equals("api.md")){
-				try{
-					this.description = Utils.getContents(f);
-				}catch (IllegalStateException e) {
-					System.err.println("Unable to read portal description " + f.getAbsolutePath());
-					this.description = "";
+			if(fName.endsWith(".md")){
+				if(fName.startsWith("api")){
+					try{
+						this.description = Utils.getContents(f);
+					}catch (IllegalStateException e) {
+						System.err.println("Unable to read portal description " + f.getAbsolutePath());
+						this.description = "";
+					}
 				}
-			}
-			else if(fName.equals("notebook.md")){
-				try{
-					this.notebooksDescription = Utils.getContents(f);
-				}catch (IllegalStateException e) {
-					System.err.println("Unable to read notebooks description " + f.getAbsolutePath());
-					this.notebooksDescription = "";
+				else if(fName.startsWith("notebook")){
+					try{
+						this.notebooksDescription = Utils.getContents(f);
+					}catch (IllegalStateException e) {
+						System.err.println("Unable to read notebooks description " + f.getAbsolutePath());
+						this.notebooksDescription = "";
+					}
 				}
 			}
 		}
