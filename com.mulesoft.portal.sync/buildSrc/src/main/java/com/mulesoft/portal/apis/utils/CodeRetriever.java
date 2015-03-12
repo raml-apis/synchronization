@@ -69,17 +69,17 @@ public class CodeRetriever {
 
 	private void createTargetDirectory() {
 		
-		if(targetDir.exists()){
-			if(targetDir.isDirectory()){
-				throw new RuntimeException("File " + targetDir.getAbsolutePath() + "already exists");
-			}
-			else{
-				File[] listFiles = targetDir.listFiles();
-				if(listFiles!=null&&listFiles.length!=0){
-					throw new RuntimeException("Directory " + targetDir.getAbsolutePath() + "already exists and is not empty");
-				}
-			}
-		}
+//		if(targetDir.exists()){
+//			if(targetDir.isDirectory()){
+//				throw new RuntimeException("File " + targetDir.getAbsolutePath() + "already exists");
+//			}
+//			else{
+//				File[] listFiles = targetDir.listFiles();
+//				if(listFiles!=null&&listFiles.length!=0){
+//					throw new RuntimeException("Directory " + targetDir.getAbsolutePath() + "already exists and is not empty");
+//				}
+//			}
+//		}
 		
 		targetDir.mkdirs();
 	}

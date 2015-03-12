@@ -1,6 +1,10 @@
 package com.mulesoft.portal.apis.hlm;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -95,7 +99,13 @@ public class APIVersion {
 		if(noteBookSubFolder.exists() && noteBookSubFolder.isDirectory()){
 			noteBookFolder = noteBookSubFolder;
 		}
-		File[] files = noteBookFolder.listFiles();		
+		File[] files = noteBookFolder.listFiles(new FileFilter() {
+			
+			@Override
+			public boolean accept(File file) {
+				return !file.isDirectory();
+			}
+		});
 		return files != null ? files : new File[0];
 	}
 
@@ -147,11 +157,15 @@ public class APIVersion {
 	}
 
 	private String getValue(File pn, String str) {
+		
+		BufferedReader br = null;
 		try {
-			List<String> readAllLines = Files.readAllLines(pn.toPath(),
-					Charset.forName("UTF-8"));
+			
+			br = new BufferedReader(new FileReader(pn)); 
+			
 			String title = null;
-			for (String line : readAllLines) {
+			String line;
+			while((line=br.readLine())!=null) {
 
 				int indexOf = line.indexOf(str);
 				if (indexOf != -1) {
@@ -166,6 +180,15 @@ public class APIVersion {
 		} catch (IOException e) {
 			System.err.println(pn.getAbsolutePath());
 			throw new IllegalStateException(e);
+		}
+		finally{
+			if(br!=null){
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

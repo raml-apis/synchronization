@@ -74,33 +74,72 @@ public class SynchronizationManager {
 
 	boolean staging;
 
-	public void syncAllApis() {
-		API[] allApis = project.getAllApis();
-
-		APIModel[] apis = client.getAPIs();
-		//allApis = project.getAllApisToPortal();
-		HashMap<String, API> newApisp = getNewApis(allApis, apis);
-		for (API a : newApisp.values()) {
-		    if (verbose) System.out.println("Creating:"+a.getName());
-		    createAPI(a);
+	public void syncAllApis(File workingDir, String organization, List<String> branches) {
+		
+		File targetDir = new File(workingDir, "_SYNC_WOKING_DIR_");
+		if(targetDir.exists()){
+			deleteDirectory(targetDir);
 		}
-		if (cleanNotExistingApis) {
-			HashMap<String, APIModel> removed = getDeletedApis(allApis, apis);
-			for (APIModel m : removed.values()) {
-	 			if (verbose) System.out.println("Deleting:"+m.getName());
-				client.deleteAPI(m);
+		
+		List<GitHubRepository> repos = new GitHubConnector(ghCredentials).listRepositories(organization);
+		
+		for(GitHubRepository repo : repos){
+			if(repo.getName().equals("synchronization")){
+				continue;
 			}
+			System.out.println(repo.getRepoFullPath());
+			GitApiLocation al = new GitApiLocation(repo.getName(), repo.getRepoFullPath());
+			ArrayList<GitApiLocation> apiLocations = new ArrayList<GitApiLocation>();
+			apiLocations.add(al);		
+			
+			CodeRetriever cr = new CodeRetriever(targetDir, apiLocations, branches, ghCredentials);
+			cr.cloneRepos();
 		}
+			
+		ProjectBuilder pb = new ProjectBuilder();
+		APIProject apiProject = pb.build(targetDir);
+
+		API[] allApis = apiProject.getAllApis();
+		APIModel[] apis = client.getAPIs();
+
+		HashMap<String, API> newApisp = getNewApis(allApis, apis);
+//		for (API a : newApisp.values()) {
+//			if (verbose)
+//				System.out.println("Creating:" + a.getName());
+//			createAPI(a);
+//		}
+
 		HashMap<String, APIModel> allAPIModels = new HashMap<String, APIModel>();
 		for (APIModel q : apis) {
 			allAPIModels.put(q.getName(), q);
 		}
 		for (API a : allApis) {
-			if (!newApisp.containsKey(a.getName())) {
-	 			if (verbose) System.out.println("Checking:"+a.getName());
-				updateAPIIfNeeded(allAPIModels.get(a.getName()), a);
+			if (newApisp.containsKey(a.getName())) {
+				continue;
+			}
+			updateAPIIfNeeded(allAPIModels.get(a.getName()), a);
+		}
+
+		deleteDirectory(targetDir);
+	}
+
+	private void deleteDirectory(File dir) {
+		cleanDirectory(dir);
+		dir.delete();
+	}
+
+	private void cleanDirectory(File dir) {
+		
+		File[] listFiles = dir.listFiles();
+		for(File f : listFiles){
+			if(f.isDirectory()){
+				deleteDirectory(f);
+			}
+			else{
+				f.delete();
 			}
 		}
+		
 	}
 
 	public void syncAPI(File apiDir, List<String> branches) {

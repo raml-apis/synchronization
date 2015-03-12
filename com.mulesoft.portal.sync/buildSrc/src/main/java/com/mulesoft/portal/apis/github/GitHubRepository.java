@@ -118,6 +118,10 @@ public class GitHubRepository {
 		}
 		return cList.get(0).getSHA1();
 	}
+
+	public String getName() {
+		return repository.getName();
+	}
 	
 	
 
