@@ -153,7 +153,11 @@ public class APIVersion {
 
 	private String getVersion(File pn) {
 		String str = "version:";
-		return getValue(pn, str);
+		String ver = getValue(pn, str);
+		if(ver==null){
+			ver = "v1";
+		}
+		return ver;
 	}
 
 	private String getValue(File pn, String str) {

@@ -46,6 +46,7 @@ public abstract class SimpleClient {
 		if (post.getStatus() < 200 || post.getStatus() > 300) {
 			System.err.println(target.getUri().toASCIIString() + ":"
 					+ post.getStatus());
+			System.err.println(JSONObject.toJSONString(object));
 			System.err.println(asString);
 			// throw new IllegalStateException();
 		}

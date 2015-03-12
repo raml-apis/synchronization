@@ -153,6 +153,9 @@ public class SynchronizationManager {
 		apiLocations.add(al);		
 		
 		File targetDir = new File(apiDir, "_SYNC_WOKING_DIR_");
+		if(targetDir.exists()){
+			deleteDirectory(targetDir);
+		}
 		
 		CodeRetriever cr = new CodeRetriever(targetDir, apiLocations, branches, ghCredentials);
 		cr.cloneRepos();
@@ -190,7 +193,7 @@ public class SynchronizationManager {
 			
 			PortalAPIVersion lastVersion = apiModel.getLastVersion();
 			
-			if(branch.equals("staging")){
+			if(branch.equals("staging")&&!lastVersion.getName().endsWith("-staging")){
 				String stagingVersionName = lastVersion.getName()+"-staging";
 				PortalAPIVersion stagingVersion = apiModel.getVersion(stagingVersionName);
 				if(stagingVersion!= null){
