@@ -41,6 +41,8 @@ task syncAllAPIs() << {
     println("API sync completed");
 }
 task syncAPI() << {
+    new com.mulesoft.portal.test.Test().sendMessage(ENV['GIT_COMMIT']);
+    new com.mulesoft.portal.test.Test().sendMessage(ENV['GIT_BRANCH ']);
     String userDir = System.getProperty("user.dir");
     File rootFile = new File(userDir);
     SynchronizationManager v = new SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword);
