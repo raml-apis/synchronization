@@ -21,6 +21,7 @@ import com.mulesoft.portal.apis.sync.SynchronizationManager;
 import com.mulesoft.portal.client.PortalClient;
 import com.mulesoft.portal.apis.hlm.APIProject;
 import com.mulesoft.portal.apis.hlm.ProjectBuilder;
+import com.mulesoft.portal.apis.github.RepoUrlExtractor;
 
 import java.io.File;
 
