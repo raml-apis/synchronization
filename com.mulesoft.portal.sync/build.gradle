@@ -22,6 +22,7 @@ import com.mulesoft.portal.client.PortalClient;
 import com.mulesoft.portal.apis.hlm.APIProject;
 import com.mulesoft.portal.apis.hlm.ProjectBuilder;
 import com.mulesoft.portal.apis.github.RepoUrlExtractor;
+import com.mulesoft.portal.apis.github.GitApiLocation;
 
 import java.io.File;
 
@@ -47,7 +48,7 @@ task syncAllAPIs() << {
 task syncAPI() << {
     String userDir = System.getProperty("user.dir");
     File rootFile = new File(userDir);
-    GitApiLocation al = new RepoUrlExtractor(branches).createLocation(String fullBranch, File rootFile);
+    GitApiLocation al = new RepoUrlExtractor(branches).createLocation(fullBranch, rootFile);
     SynchronizationManager v = new SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword);
     println("Starting api sync");
     v.syncAPI(rootFile, al);
