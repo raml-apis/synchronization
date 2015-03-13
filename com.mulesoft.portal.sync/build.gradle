@@ -31,11 +31,13 @@ String portalPassword = ENV['PORTALPASSWORD']
 String portalLogin = ENV['PORTALLOGIN']
 String organization = ENV['GITHUB_ORGANIZATION']
 
+String fullBaranch = ENV['GIT_BRANCH']
+
 ArrayList<String> branches = new ArrayList<String>(Arrays.asList("production","staging"));
 
 task syncAllAPIs() << {
     String userDir = System.getProperty("user.dir");
-    File rootFile = new File(userDir);
+    File rootFile = new File(userDir);    
     SynchronizationManager v = new SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword);
     println("Starting api sync");
     v.syncAllApis(rootFile, organization, branches);
@@ -44,9 +46,10 @@ task syncAllAPIs() << {
 task syncAPI() << {
     String userDir = System.getProperty("user.dir");
     File rootFile = new File(userDir);
+    GitApiLocation al = new RepoUrlExtractor(branches).createLocation(String fullBranch, File rootFile);
     SynchronizationManager v = new SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword);
     println("Starting api sync");
-    v.syncAPI(rootFile, branches);
+    v.syncAPI(rootFile, al);
     println("API sync completed");
 }
 task cleanPortal() << {

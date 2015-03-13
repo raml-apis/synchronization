@@ -13,20 +13,17 @@ import com.mulesoft.portal.apis.github.GitHubRepository;
 
 public class CodeRetriever {
 	
-	public CodeRetriever(File targetDir, List<GitApiLocation> apiLocations, List<String> branches, GitHubCredentials credentials)
+	public CodeRetriever(File targetDir, List<GitApiLocation> apiLocations, GitHubCredentials credentials)
 	{
 		super();
 		this.targetDir = targetDir;
 		this.apiLocations = apiLocations;
-		this.branches = branches;
 		this.connector = new GitHubConnector(credentials);
 	}
 
 	private File targetDir;
 	
 	private List<GitApiLocation> apiLocations;
-	
-	private List<String> branches;
 	
 	private GitHubConnector connector;
 	
@@ -50,7 +47,7 @@ public class CodeRetriever {
 		
 		Map<String, GitHubBranch> gitHubBranches = repo.getBranches();
 		
-		for(String br : branches){
+		for(String br : apiLocation.getBranches()){
 			if(!gitHubBranches.containsKey(br)){
 				continue;
 			}

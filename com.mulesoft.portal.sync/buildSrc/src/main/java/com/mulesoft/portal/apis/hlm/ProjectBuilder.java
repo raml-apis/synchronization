@@ -2,6 +2,7 @@ package com.mulesoft.portal.apis.hlm;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,12 +44,13 @@ public class ProjectBuilder {
 			if(!branchFolder.isDirectory()){
 				continue;
 			}
+			String branch = branchFolder.getName();
+			List<String> branches = Arrays.asList(branch);
+			
 			ArrayList<File> rootRamls = new ArrayList<File>();
 			
-			String repoFullPath = RepoUrlExtractor.extractRepoUrl(branchFolder);
-			GitApiLocation apiLocation = new GitApiLocation(f.getName(), repoFullPath);
+			GitApiLocation apiLocation = new RepoUrlExtractor(branches).createLocation(null,branchFolder);
 			
-			String branch = branchFolder.getName();
 
 			for (File fl : branchFolder.listFiles()) {
 				if (fl.getName().endsWith(".raml")) {

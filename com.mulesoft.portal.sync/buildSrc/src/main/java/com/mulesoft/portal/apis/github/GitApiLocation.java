@@ -1,5 +1,7 @@
 package com.mulesoft.portal.apis.github;
 
+import java.util.List;
+
 
 public class GitApiLocation {
 	
@@ -7,10 +9,11 @@ public class GitApiLocation {
 
 	private static final String GITHUB_COM_SLASH_STRING = "github.com/";
 
-	public GitApiLocation(String apiName, String repoFullPath) {
+	public GitApiLocation(String apiName, String repoFullPath, List<String> branches) {
 		super();
 		this.apiName = apiName.trim();
 		this.repoFullPath = repoFullPath.trim();
+		this.branches = branches;
 		extractOwnerAndRepoNames();
 	}
 
@@ -23,6 +26,8 @@ public class GitApiLocation {
 	private String repoId;
 	
 	private String repoPath;
+	
+	private List<String> branches;
 	
 
 	private void extractOwnerAndRepoNames() {
@@ -67,6 +72,10 @@ public class GitApiLocation {
 	
 	private String constructErrorMessage() {
 		return "Repository path '" + this.repoFullPath +"' does not belong to GitHub.\nExpecting path as 'https://github.com/{ownerId}/{repoId}.git'";
+	}
+
+	public List<String> getBranches() {
+		return branches;
 	}
 
 }

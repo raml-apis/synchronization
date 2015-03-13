@@ -1,12 +1,22 @@
 package com.mulesoft.portal.apis.github;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import com.mulesoft.portal.apis.utils.Utils;
 
 public class RepoUrlExtractor {
 	
-	public static String extractRepoUrl(File repoDir) {
+	public RepoUrlExtractor(List<String> branches) {
+		super();
+		this.branches = branches;
+	}
+
+
+	private List<String> branches;
+	
+	public GitApiLocation createLocation(String fullBranch, File repoDir){
 		
 		File gitMetaFolder = new File(repoDir, ".git");
 		if(!gitMetaFolder.exists() || !gitMetaFolder.isDirectory()){
@@ -18,40 +28,42 @@ public class RepoUrlExtractor {
 			throw new RuntimeException( "Unable to find repository config for " + repoDir.getAbsolutePath());
 		}
 		
-		String config = Utils.getContents(configFile);
-		int ind0 = config.indexOf("[remote");
-		int ind1 = config.indexOf("[",ind0+1);
-		if(ind1<0){
-			ind1 = config.length();
+		GitHubConfig cfg = new GitHubConfig(configFile);
+		GitApiLocation loc = null;
+		
+		if(fullBranch!= null){
+			int ind = fullBranch.indexOf('/');
+			String origin = fullBranch.substring(0, ind);
+			String branch = fullBranch.substring(ind+1);
+			String repoFullPath = cfg.getRepoFullPath(origin);
+			String apiName = extractName(repoFullPath);
+			if(repoFullPath!=null){
+				loc = new GitApiLocation(apiName, repoFullPath, Arrays.asList(branch));
+			}
+		}
+		if(loc==null){
+			if(cfg.size()>1){
+				throw new RuntimeException( "Unable to find repository for" + repoDir.getAbsolutePath());
+			}
+			else if(cfg.size()>1){
+				throw new RuntimeException( "Unable to determine exact repository for" + repoDir.getAbsolutePath());
+			}
+			String repoFullPath = cfg.getRepoFullPath();
+			String apiName = extractName(repoFullPath);
+			loc = new GitApiLocation(apiName, repoFullPath, this.branches);
 		}
 		
-		String remote = config.substring(ind0, ind1);
-		int ind2 = remote.indexOf("url =");
-		if(ind2<0){
-			ind2 = remote.indexOf("url=");
-			if(ind2<0){
-				throw new RuntimeException( "Unable to find repository path inside config for " + repoDir.getAbsolutePath());
-			}
-			else{
-				ind2 += "url=".length();
-			}
-		}
-		else{
-			ind2 += "url =".length();
-		}
+		return loc;
+	}
+	
+
+	private String extractName(String repoFullPath) {
 		
-		int ind3 = remote.indexOf("\n",ind2);
-		if(ind3<0){
-			ind3 = remote.length();
-		}
-		String url = remote.substring(ind2, ind3).trim();
-		if(!url.endsWith(".git")){
-			if(url.endsWith("/")){
-				url = url.substring(0, url.length()-1);
-			}
-			url += ".git";
-		}
-		return url;
+		int ind0 = repoFullPath.lastIndexOf('/');
+		ind0++;
+		int ind1 = repoFullPath.lastIndexOf(".git");
+		String name = repoFullPath.substring(ind0, ind1);
+		return name;
 	}
 
 }

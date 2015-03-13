@@ -88,11 +88,11 @@ public class SynchronizationManager {
 				continue;
 			}
 			System.out.println(repo.getRepoFullPath());
-			GitApiLocation al = new GitApiLocation(repo.getName(), repo.getRepoFullPath());
+			GitApiLocation al = new GitApiLocation(repo.getName(), repo.getRepoFullPath(), branches);
 			ArrayList<GitApiLocation> apiLocations = new ArrayList<GitApiLocation>();
 			apiLocations.add(al);		
 			
-			CodeRetriever cr = new CodeRetriever(targetDir, apiLocations, branches, ghCredentials);
+			CodeRetriever cr = new CodeRetriever(targetDir, apiLocations, ghCredentials);
 			cr.cloneRepos();
 		}
 			
@@ -142,12 +142,7 @@ public class SynchronizationManager {
 		
 	}
 
-	public void syncAPI(File apiDir, List<String> branches) {
-		
-
-		String repoFullPath = RepoUrlExtractor.extractRepoUrl(apiDir);
-		String apiName = extractName(repoFullPath);
-		GitApiLocation al = new GitApiLocation(apiName, repoFullPath);
+	public void syncAPI(File apiDir, GitApiLocation al) {
 		
 		ArrayList<GitApiLocation> apiLocations = new ArrayList<GitApiLocation>();
 		apiLocations.add(al);		
@@ -157,7 +152,7 @@ public class SynchronizationManager {
 			deleteDirectory(targetDir);
 		}
 		
-		CodeRetriever cr = new CodeRetriever(targetDir, apiLocations, branches, ghCredentials);
+		CodeRetriever cr = new CodeRetriever(targetDir, apiLocations, ghCredentials);
 		cr.cloneRepos();
 		
 		ProjectBuilder pb = new ProjectBuilder();
@@ -184,14 +179,6 @@ public class SynchronizationManager {
 		}
 	}
 
-	private String extractName(String repoFullPath) {
-		
-		int ind0 = repoFullPath.lastIndexOf('/');
-		ind0++;
-		int ind1 = repoFullPath.lastIndexOf(".git");
-		String name = repoFullPath.substring(ind0, ind1);
-		return name;
-	}
 
 	private void updateAPIIfNeeded(APIModel apiModel, API a)
 	{
