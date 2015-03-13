@@ -48,5 +48,9 @@ task syncAPI() << {
     v.syncAPI(rootFile, branches);
     println("API sync completed");
 }
+task cleanPortal() << {
+    SynchronizationManager v = new SynchronizationManager(portalLogin,portalPassword,ghLogin,ghPassword);
+    v.removeAllApisFromPortal();
+}
 
 

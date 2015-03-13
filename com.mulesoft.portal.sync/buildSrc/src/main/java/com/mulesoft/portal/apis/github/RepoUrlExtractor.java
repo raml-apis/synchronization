@@ -44,8 +44,14 @@ public class RepoUrlExtractor {
 		if(ind3<0){
 			ind3 = remote.length();
 		}
-		String result = remote.substring(ind2, ind3).trim();
-		return result;
+		String url = remote.substring(ind2, ind3).trim();
+		if(!url.endsWith(".git")){
+			if(url.endsWith("/")){
+				url = url.substring(0, url.length()-1);
+			}
+			url += ".git";
+		}
+		return url;
 	}
 
 }

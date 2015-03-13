@@ -103,11 +103,11 @@ public class SynchronizationManager {
 		APIModel[] apis = client.getAPIs();
 
 		HashMap<String, API> newApisp = getNewApis(allApis, apis);
-//		for (API a : newApisp.values()) {
-//			if (verbose)
-//				System.out.println("Creating:" + a.getName());
-//			createAPI(a);
-//		}
+		for (API a : newApisp.values()) {
+			if (verbose)
+				System.out.println("Creating:" + a.getName());
+			createAPI(a);
+		}
 
 		HashMap<String, APIModel> allAPIModels = new HashMap<String, APIModel>();
 		for (APIModel q : apis) {
