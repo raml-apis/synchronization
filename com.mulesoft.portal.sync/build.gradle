@@ -33,7 +33,7 @@ String portalPassword = ENV['PORTALPASSWORD']
 String portalLogin = ENV['PORTALLOGIN']
 String organization = ENV['GITHUB_ORGANIZATION']
 
-String fullBaranch = ENV['GIT_BRANCH']
+String fullBranch = ENV['GIT_BRANCH']
 
 ArrayList<String> branches = new ArrayList<String>(Arrays.asList("production","staging"));
 
