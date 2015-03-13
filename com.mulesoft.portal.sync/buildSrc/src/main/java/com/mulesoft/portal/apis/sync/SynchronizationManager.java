@@ -144,9 +144,9 @@ public class SynchronizationManager {
 
 	public void syncAPI(File apiDir, List<String> branches) {
 		
-		String apiName = apiDir.getName();
-		
-		String repoFullPath = RepoUrlExtractor.extractRepoUrl(apiDir);		
+
+		String repoFullPath = RepoUrlExtractor.extractRepoUrl(apiDir);
+		String apiName = extractName(repoFullPath);
 		GitApiLocation al = new GitApiLocation(apiName, repoFullPath);
 		
 		ArrayList<GitApiLocation> apiLocations = new ArrayList<GitApiLocation>();
@@ -182,6 +182,15 @@ public class SynchronizationManager {
 			}
 			updateAPIIfNeeded(allAPIModels.get(a.getName()), a);
 		}
+	}
+
+	private String extractName(String repoFullPath) {
+		
+		int ind0 = repoFullPath.lastIndexOf('/');
+		ind0++;
+		int ind1 = repoFullPath.lastIndexOf(".git");
+		String name = repoFullPath.substring(ind0, ind1);
+		return name;
 	}
 
 	private void updateAPIIfNeeded(APIModel apiModel, API a)
