@@ -3,6 +3,8 @@ package com.mulesoft.portal.apis.sync;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -100,6 +102,15 @@ public class SynchronizationManager {
 		APIProject apiProject = pb.build(targetDir);
 
 		API[] allApis = apiProject.getAllApis();
+		Arrays.sort(allApis, new Comparator<API>() {
+
+			@Override
+			public int compare(API a1, API a2) {
+				int compareName = a1.getName().compareTo(a2.getName());
+				return compareName;
+			}
+		});
+		
 		APIModel[] apis = client.getAPIs();
 
 		HashMap<String, API> newApisp = getNewApis(allApis, apis);
