@@ -108,6 +108,7 @@ public class SynchronizationManager {
 			public int compare(API a1, API a2) {
 				int compareName = a1.getName().compareTo(a2.getName());
 				return compareName;
+
 			}
 		});
 		
@@ -216,15 +217,15 @@ public class SynchronizationManager {
 			String latestSHA1 = ghBranch.getBranch().getSHA1();
 	
 			String syncInfo = client.getSyncInfo(lastVersion);
-			if (syncInfo == null || !syncInfo.equals(latestSHA1)) {
+//			if (syncInfo == null || !syncInfo.equals(latestSHA1)) {
 				syncAPI(apiModel, ver, lastVersion, latestSHA1);
-			}
+//			}
 		}
 	}
 
 	private void syncAPI(APIModel apiModel, APIVersion ver, PortalAPIVersion lastVersion, String latestSHA1) {
 		System.out.println("Syncing Version: " + ver.getName());
-		
+		client.checkPortal(apiModel, lastVersion);
 		client.updateVersion(lastVersion,ver.getHeadLine());
 		client.deleteAllPages(lastVersion);
 		createPortalContent(apiModel, ver, lastVersion);
@@ -295,6 +296,7 @@ public class SynchronizationManager {
 
 	private void uploadVersion(APIVersion ver, APIModel apiModel, PortalAPIVersion portalVersion)
 	{
+		client.checkPortal(apiModel, portalVersion);
 		client.updateVersion(portalVersion,ver.getHeadLine());
 		client.deleteAPIPortal(portalVersion);
 		client.addRootRAML(portalVersion, ver.getMainRAMLContent());

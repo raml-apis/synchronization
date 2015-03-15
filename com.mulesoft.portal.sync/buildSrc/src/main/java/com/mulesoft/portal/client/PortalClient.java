@@ -99,13 +99,38 @@ public class PortalClient extends SimpleClient{
 						if (e.id.longValue()==version.id) {
 							JSONObject vobj=(JSONObject) va.get(i);
 							vobj.put("description",description);
-							putJSON("/apiplatform/repository/apis/" + version.getAPIModel().id
-									+ "/versions/" + version.id + "", vobj);
+							String path = "/apiplatform/repository/apis/" + version.getAPIModel().id
+									+ "/versions/" + version.id + "";
+							putJSON(path, vobj);
 						}
 					}
 				}
 			}
 		}
+	}
+	public JSONObject getVersion(PortalAPIVersion version){
+		JSONObject json = getJSON("/apiplatform/repository/apis");
+		JSONArray object = (JSONArray) json.get("apis");
+		APIModel[] result = new APIModel[object.size()];
+		for (int a = 0; a < object.size(); a++) {
+			JSONObject obj = (JSONObject) object.get(a);
+			APIModel load = SimpleToJSON.load(obj, APIModel.class);
+			result[a] = load;
+			if (load.id.longValue()==version.getAPIModel().id) {
+				JSONArray va = (JSONArray) obj.get("versions");
+				if (va != null) {
+					for (int i = 0; i < va.size(); i++) {
+						PortalAPIVersion e = load.new PortalAPIVersion();
+						e.load((JSONObject) va.get(i));
+						if (e.id.longValue()==version.id) {
+							return getJSON("/apiplatform/repository/apis/" + version.getAPIModel().id
+									+ "/versions/" + version.id + "");
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 	public  PortalAPIVersion getOrCreateStagingVersion(PortalAPIVersion version){
 		JSONObject json = getJSON("/apiplatform/repository/apis");
@@ -433,18 +458,37 @@ public class PortalClient extends SimpleClient{
 			e.printStackTrace();
 		}
 	}
+	
+	public void checkPortal(APIModel apiModel, PortalAPIVersion ver)
+	{
+		String versionsURL = "/apiplatform/repository/apis/" + apiModel.getId() + "/versions";
+		String versionURL = versionsURL + "/" + ver.id;
+		String portalURL = versionURL + "/portal";
+		
+		try{
+			getJSON(portalURL);
+		}
+		catch(Exception e){
+			postJSON(portalURL, null);
+		}
+	}
 
 
 	public PortalAPIVersion createNewVersion(APIModel apiModel, String verName,	String description)
 	{
 		JSONObject json = new JSONObject();
 		json.put("name", verName);
-		JSONObject object = postJSON("/apiplatform/repository/apis/" + apiModel.getId() + "/versions",json);
+		String versionsURL = "/apiplatform/repository/apis/" + apiModel.getId() + "/versions";
+		JSONObject object = postJSON(versionsURL,json);
 		
 		PortalAPIVersion version = apiModel.new PortalAPIVersion();
 		version.id = (Long) object.get("id");
 		version.setName((String) object.get("name"));
 		apiModel.versionList.add(version);
+		
+		String versionURL = versionsURL + "/" + version.id;
+		String portalURL = versionURL + "/portal";
+		
 		return version;
 	}
 
