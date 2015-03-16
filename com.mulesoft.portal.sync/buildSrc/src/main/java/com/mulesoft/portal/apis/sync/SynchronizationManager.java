@@ -196,7 +196,10 @@ public class SynchronizationManager {
 	{
 		ArrayList<APIVersion> versions = a.getVersions();
 		for(APIVersion ver : versions){
-			
+			Notebook[] notebooks = ver.getNotebooks();
+			if(notebooks==null||notebooks.length==0){
+				continue;
+			}
 			String branch = ver.getBranch();
 			
 			PortalAPIVersion lastVersion = apiModel.getLastVersion();
@@ -277,6 +280,10 @@ public class SynchronizationManager {
 		ArrayList<APIVersion> versions = a.getVersions();
 		
 		APIVersion ver0 = versions.get(0);
+		Notebook[] notebooks = ver0.getNotebooks();
+		if(notebooks==null||notebooks.length==0){
+			return;
+		}
 		APIModel newAPI = client.createNewAPI(new APIModel(a.getName(), ver0.getVersion(),ver0.getDescription()));
 		PortalAPIVersion lastVersion = newAPI.getLastVersion();
 		

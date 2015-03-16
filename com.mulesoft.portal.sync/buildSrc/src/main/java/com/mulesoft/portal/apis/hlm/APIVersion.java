@@ -298,4 +298,8 @@ public class APIVersion {
 	public GitApiLocation getApiLocation() {
 		return apiLocation;
 	}
+
+	public File getMainRAML() {
+		return this.mainFile;
+	}
 }

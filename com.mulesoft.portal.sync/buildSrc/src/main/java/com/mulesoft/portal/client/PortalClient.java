@@ -204,17 +204,22 @@ public class PortalClient extends SimpleClient{
 				long addFolder = addFolder(version, f.getName(), (int) parentId);
 				writeFolder(version, f, addFolder, skip);
 			} else {
-				try {
-					addFileRAML(version, f.getName(),
-							new String(
-									Files.readAllBytes(Paths.get(f.toURI())),
-									"UTF-8"), parentId);
-				} catch (UnsupportedEncodingException e) {
-					throw new IllegalStateException(e);
-				} catch (IOException e) {
-					throw new IllegalStateException(e);
-				}
+				writeFile(version, parentId, f);
 			}
+		}
+	}
+
+
+	public void writeFile(PortalAPIVersion version, long parentId, File f) {
+		try {
+			addFileRAML(version, f.getName(),
+					new String(
+							Files.readAllBytes(Paths.get(f.toURI())),
+							"UTF-8"), parentId);
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
