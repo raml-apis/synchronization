@@ -88,7 +88,10 @@ public class UnusedFiledDetector {
 		for (File f : folder.listFiles()) {
 			
 			if (f.isDirectory()) {
-				
+			
+				if (f.getName().startsWith(".")){
+					continue;
+				}
 				if (f.getName().equals("portal")){
 					continue;
 				}
