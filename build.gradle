@@ -109,12 +109,15 @@ public class UnusedFiledDetector {
 	
 	public void testAllApis(File rootFolder){
 	
-		File[] listFiles = rootFolder.listFiles();
+	
+/*		File[] listFiles = rootFolder.listFiles();
 		for (File f: listFiles){
 			if (f.isDirectory()){
 				testAPIFolder(f,true);
 			}
 		}
+*/
+		testAPIFolder(rootFolder,true);
 		visited.removeAll(included);
 		System.out.println("Totally have :"+visited.size()+" unreferenced files");
 		ArrayList<File>str=new ArrayList<File>(visited);
