@@ -92,6 +92,9 @@ public class UnusedFiledDetector {
 				if (f.getName().startsWith(".")){
 					continue;
 				}
+				if (f.getName().equals("synchronization")){
+					continue;
+				}
 				if (f.getName().equals("portal")){
 					continue;
 				}
