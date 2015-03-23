@@ -251,7 +251,7 @@ task testValidate {
 
 	new UnusedFiledDetector().testAllApis(rootDir);
     def visitor = new RAMLProjectVisitor()
-    visitor.visit(projectDir);
+    visitor.visit(rootDir);
 	
     if (!visitor.isValid){
         throw new IllegalStateException("Build failed");
