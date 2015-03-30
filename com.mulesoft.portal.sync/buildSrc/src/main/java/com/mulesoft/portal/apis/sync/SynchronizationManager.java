@@ -28,6 +28,8 @@ import com.mulesoft.portal.client.PortalClient;
 
 public class SynchronizationManager {
 
+	private static final String STAGING_SUFFIX = "-staging";
+
 	protected PortalClient client;
 
 	protected APIProject project;
@@ -204,14 +206,25 @@ public class SynchronizationManager {
 			
 			PortalAPIVersion lastVersion = apiModel.getLastVersion();
 			
-			if(branch.equals("staging")&&!lastVersion.getName().endsWith("-staging")){
-				String stagingVersionName = lastVersion.getName()+"-staging";
+			String lastVersionName = lastVersion.getName();
+			if(branch.equals("staging")&&!lastVersionName.endsWith(STAGING_SUFFIX)){
+				String stagingVersionName = lastVersionName+STAGING_SUFFIX;
 				PortalAPIVersion stagingVersion = apiModel.getVersion(stagingVersionName);
 				if(stagingVersion!= null){
 					lastVersion = stagingVersion;
 				}
 				else{
 					lastVersion = client.createNewVersion(apiModel, stagingVersionName, ver.getDescription());
+				}
+			}
+			else if(branch.equals("production")&&lastVersionName.endsWith(STAGING_SUFFIX)){
+				String productionVersionName = lastVersionName.substring(0, lastVersionName.length()-STAGING_SUFFIX.length());
+				PortalAPIVersion stagingVersion = apiModel.getVersion(productionVersionName);
+				if(stagingVersion!= null){
+					lastVersion = stagingVersion;
+				}
+				else{
+					lastVersion = client.createNewVersion(apiModel, productionVersionName, ver.getDescription());
 				}
 			}
 	
