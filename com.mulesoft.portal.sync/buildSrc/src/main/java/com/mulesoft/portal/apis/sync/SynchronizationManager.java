@@ -204,28 +204,11 @@ public class SynchronizationManager {
 			}
 			String branch = ver.getBranch();
 			
-			PortalAPIVersion lastVersion = apiModel.getLastVersion();
+			PortalAPIVersion lastVersion = findLastVersion(apiModel, branch);
 			
-			String lastVersionName = lastVersion.getName();
-			if(branch.equals("staging")&&!lastVersionName.endsWith(STAGING_SUFFIX)){
-				String stagingVersionName = lastVersionName+STAGING_SUFFIX;
-				PortalAPIVersion stagingVersion = apiModel.getVersion(stagingVersionName);
-				if(stagingVersion!= null){
-					lastVersion = stagingVersion;
-				}
-				else{
-					lastVersion = client.createNewVersion(apiModel, stagingVersionName, ver.getDescription());
-				}
-			}
-			else if(branch.equals("production")&&lastVersionName.endsWith(STAGING_SUFFIX)){
-				String productionVersionName = lastVersionName.substring(0, lastVersionName.length()-STAGING_SUFFIX.length());
-				PortalAPIVersion stagingVersion = apiModel.getVersion(productionVersionName);
-				if(stagingVersion!= null){
-					lastVersion = stagingVersion;
-				}
-				else{
-					lastVersion = client.createNewVersion(apiModel, productionVersionName, ver.getDescription());
-				}
+			if(lastVersion == null){
+				createVersion(ver, apiModel);
+				continue;
 			}
 	
 			GitHubRepository repo = new GitHubConnector(this.ghCredentials).getRepository(ver.getApiLocation());
@@ -237,6 +220,23 @@ public class SynchronizationManager {
 				syncAPI(apiModel, ver, lastVersion, latestSHA1);
 //			}
 		}
+	}
+
+	private PortalAPIVersion findLastVersion(APIModel apiModel, String branch) {
+		PortalAPIVersion lastVersion = apiModel.getLastVersion();
+			
+		String lastVersionName = lastVersion.getName();
+		if(branch.equals("staging")&&!lastVersionName.endsWith(STAGING_SUFFIX)){
+			lastVersionName = lastVersionName+STAGING_SUFFIX;
+		}
+		else if(branch.equals("production")&&lastVersionName.endsWith(STAGING_SUFFIX)){
+			lastVersionName = lastVersionName.substring(0, lastVersionName.length()-STAGING_SUFFIX.length());
+		}
+		else{
+			return lastVersion;
+		}
+		lastVersion = apiModel.getVersion(lastVersionName);
+		return lastVersion;
 	}
 
 	private void syncAPI(APIModel apiModel, APIVersion ver, PortalAPIVersion lastVersion, String latestSHA1) {
