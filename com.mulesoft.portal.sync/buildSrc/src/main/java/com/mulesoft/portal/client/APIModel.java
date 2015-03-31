@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import org.json.simple.JSONObject;
 
-import com.mulesoft.portal.client.APIModel.PortalAPIVersion;
-
 public class APIModel extends SimpleToJSON {
 
 	Long id;
@@ -53,6 +51,18 @@ public class APIModel extends SimpleToJSON {
 		Long id;
 		private String name;
 		String description;
+		
+		private PortalMap portalMap;
+		
+
+		public PortalMap getPortalMap() {
+			return portalMap;
+		}
+
+		public void setPortalMap(PortalMap portalMap) {
+			this.portalMap = portalMap;
+		}
+
 
 		public APIModel getAPIModel() {
 			return APIModel.this;
@@ -66,7 +76,9 @@ public class APIModel extends SimpleToJSON {
 			this.name = name;
 		}
 
-
+		public Long getId() {
+			return id;
+		}
 	}
 
 	public Long getId() {

@@ -8,13 +8,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import com.mulesoft.portal.apis.github.GitApiLocation;
 import com.mulesoft.portal.apis.github.GitHubBranch;
 import com.mulesoft.portal.apis.github.GitHubConnector;
 import com.mulesoft.portal.apis.github.GitHubCredentials;
 import com.mulesoft.portal.apis.github.GitHubRepository;
-import com.mulesoft.portal.apis.github.RepoUrlExtractor;
 import com.mulesoft.portal.apis.hlm.API;
 import com.mulesoft.portal.apis.hlm.APIVersion;
 import com.mulesoft.portal.apis.hlm.APIProject;
@@ -23,8 +23,10 @@ import com.mulesoft.portal.apis.hlm.ProjectBuilder;
 import com.mulesoft.portal.apis.utils.CodeRetriever;
 import com.mulesoft.portal.client.APIFile;
 import com.mulesoft.portal.client.APIModel;
+import com.mulesoft.portal.client.PortalMap;
 import com.mulesoft.portal.client.APIModel.PortalAPIVersion;
 import com.mulesoft.portal.client.PortalClient;
+import com.mulesoft.portal.client.PortalPageContent;
 
 public class SynchronizationManager {
 
@@ -174,6 +176,7 @@ public class SynchronizationManager {
 		
 		API[] allApis = apiProject.getAllApis();		
 		APIModel[] apis = client.getAPIs();
+//		client.test(apis,allApis);
 		
 		HashMap<String, API> newApisp = getNewApis(allApis, apis);
 		for (API a : newApisp.values()) {
@@ -191,8 +194,27 @@ public class SynchronizationManager {
 			}
 			updateAPIIfNeeded(allAPIModels.get(a.getName()), a);
 		}
+		
+		APIModel[] newApiSet = client.getAPIs();
+		allAPIModels.clear();
+		for (APIModel q : newApiSet) {
+			allAPIModels.put(q.getName(), q);
+		}
+		HashMap<String,APIModel> portalApiMap = getAllPresentAPIs();
+		for(API a : allApis){
+			updatePortalReferences(allAPIModels.get(a.getName()),a,portalApiMap);
+		}
 	}
 
+	private HashMap<String, APIModel> getAllPresentAPIs() {
+		
+		APIModel[] apis = client.getAPIs();
+		HashMap<String,APIModel> map = new HashMap<String, APIModel>();
+		for(APIModel am : apis){
+			map.put(am.getName(), am);
+		}
+		return map;
+	}
 
 	private void updateAPIIfNeeded(APIModel apiModel, API a)
 	{
@@ -215,10 +237,19 @@ public class SynchronizationManager {
 			GitHubBranch ghBranch = repo.getBranch(branch);
 			String latestSHA1 = ghBranch.getBranch().getSHA1();
 	
-			String syncInfo = client.getSyncInfo(lastVersion);
+//			String syncInfo = client.getSyncInfo(lastVersion);
 //			if (syncInfo == null || !syncInfo.equals(latestSHA1)) {
 				syncAPI(apiModel, ver, lastVersion, latestSHA1);
 //			}
+		}
+	}
+
+	private void updatePortalReferences(APIModel apiModel, API a, HashMap<String, APIModel> portalApiMap) {
+		ArrayList<APIVersion> versions = a.getVersions();
+		for(APIVersion ver : versions){
+			String branch = ver.getBranch();
+			PortalAPIVersion lastVersion = findLastVersion(apiModel, branch);
+			updatePortalReferences(apiModel, ver,  lastVersion,portalApiMap);
 		}
 	}
 
@@ -273,8 +304,7 @@ public class SynchronizationManager {
 
 	private void createPortalContent(APIModel apiModel, APIVersion a,
 			PortalAPIVersion lastVersion) {
-		createPortalPages(lastVersion, a.getName(), a.getPortalDescription(),
-				a.getNotebooksDescription());
+		createPortalPages(lastVersion, a);
 		for (Notebook q : a.getNotebooks()) {
 			client.createAPIPortalNotebook(apiModel, lastVersion,
 					q.getTitle(), q.getContent());
@@ -323,20 +353,172 @@ public class SynchronizationManager {
 		createPortalContent(apiModel, ver, portalVersion);
 		uploadFiles(ver.getAPIFolder(), portalVersion);
 		
-		GitHubRepository repo = new GitHubConnector(this.ghCredentials).getRepository(ver.getApiLocation());
-		String latestSHA1 = repo.getBranch(ver.getBranch()).getBranch().getSHA1();
-		client.createAPIPortalSyncStatus(portalVersion, latestSHA1);
+//		GitHubRepository repo = new GitHubConnector(this.ghCredentials).getRepository(ver.getApiLocation());
+//		String latestSHA1 = repo.getBranch(ver.getBranch()).getBranch().getSHA1();
+//		client.createAPIPortalSyncStatus(portalVersion, latestSHA1);
 	}
 
-	protected void createPortalPages(PortalAPIVersion version, String apiName,
-			String description, String notebooks) {
-		if (!apiName.endsWith(" API")) {
-			apiName += " API";
-		}
+	protected void createPortalPages(PortalAPIVersion version, APIVersion a) {
+		
+		String apiName = composeAboutApiPageName(a);
+		
+		String description = a.getPortalDescription();
+		String notebooks = a.getNotebooksDescription();
+		
 		client.createAPIPortalPage(version, apiName, description);
 		client.createAPIPortalReference(version, "API reference");
 		client.createAPIPortalSection(version, "NOTEBOOKS");
 		client.createAPIPortalPage(version, "About", notebooks);
+	}
+
+	private String composeAboutApiPageName(APIVersion a) {
+		String apiName = a.getName();
+		if (!apiName.endsWith(" API")) {
+			apiName += " API";
+		}
+		return apiName;
+	}
+	
+	private void updatePortalReferences(
+			APIModel apiModel,
+			APIVersion ver,
+			PortalAPIVersion lastVersion,
+			HashMap<String, APIModel> portalApiMap) {
+		
+
+		PortalMap portalMap = lastVersion.getPortalMap();
+		if(portalMap == null){
+			portalMap = client.getPortalMap(lastVersion);
+			lastVersion.setPortalMap(portalMap);
+		}
+		
+		String apiName = composeAboutApiPageName(ver);
+		String[] pagesToUpdate = new String[]{ apiName, "About" };
+		
+		for(String pageName : pagesToUpdate){
+			PortalPageContent page = portalMap.getPage(pageName);
+			updatePortalReferences(page, lastVersion, portalApiMap);
+		}
+		
+		for(PortalPageContent page : portalMap.getNotebooks()){
+			updatePortalReferences(page, lastVersion, portalApiMap);
+		}
+		
+	}
+	
+	public static final String DEFINITION_PAGE_NAME = "definition";
+
+	public static final String ROOT_RAML_PAGE_NAME = "root RAML";
+	
+	private static HashMap<String,String> referenceTagMap = new HashMap<String, String>();
+	static{
+		referenceTagMap.put("#REF_TAG_API_REFERENCE", "API reference");
+		referenceTagMap.put("#REF_TAG_DEFENITION", DEFINITION_PAGE_NAME);
+		referenceTagMap.put("#REF_TAG_ROOT_RAML", ROOT_RAML_PAGE_NAME);
+		referenceTagMap.put("#REF_TAG_ABOUT_NOTEBOOKS", "About");
+	}
+
+	private void updatePortalReferences(PortalPageContent page, PortalAPIVersion lastVersion, HashMap<String, APIModel> portalApiMap)
+	{
+		boolean gotChange = false;
+		gotChange |= updateReferences(page, lastVersion, portalApiMap, "data");
+		gotChange |= updateReferences(page, lastVersion, portalApiMap, "draftData");
+		
+		if(gotChange){			
+			client.updateAPIPortalPage(page);
+		}
+	}
+
+	private boolean updateReferences(PortalPageContent page, PortalAPIVersion version, HashMap<String, APIModel> portalApiMap, String fName) {
+		
+		String content = (String)page.getContent().get(fName);
+		String currentAPIName = version.getAPIModel().getName();
+		List<RefTagOccurence> refTagOccurences = getRefTagOccurences(content, currentAPIName);
+		if(refTagOccurences.isEmpty()){
+			return false;
+		}
+		StringBuilder bld = new StringBuilder();
+		
+		int prev = 0;
+		for(RefTagOccurence occurence : refTagOccurences){
+			bld.append( content.substring(prev, occurence.getStart()) );
+			String apiName = occurence.getApiName();
+			APIModel apiModel = portalApiMap.get(apiName);
+			
+			PortalAPIVersion latestVersion = getLatestVersion(version,apiModel);
+			
+			
+			PortalMap portalMap = latestVersion.getPortalMap();
+			if(portalMap==null){
+				portalMap = client.getPortalMap(latestVersion);
+				latestVersion.setPortalMap(portalMap);
+			}
+			
+			String pageName = occurence.getPageName();
+			PortalPageContent pageContent = portalMap.getPage(pageName);
+			String url = pageContent.getPortalUrl();
+			bld.append(url);
+			prev = occurence.getEnd();
+		}
+		RefTagOccurence lastOccurence = refTagOccurences.get(refTagOccurences.size()-1);
+		bld.append(content.substring(lastOccurence.getEnd()));
+		String updatedContent = bld.toString();
+		page.getContent().put(fName, updatedContent);
+		return true;
+	}
+
+	private PortalAPIVersion getLatestVersion(PortalAPIVersion version,	APIModel apiModel)
+	{
+		String vName = version.getName();
+		PortalAPIVersion lv = apiModel.getLastVersion();
+		String lvName = lv.getName();
+		if(vName.endsWith(STAGING_SUFFIX)){
+			if(lvName.endsWith(STAGING_SUFFIX)){
+				return lv;
+			}
+			else{
+				PortalAPIVersion lvStaging = apiModel.getVersion(lvName+STAGING_SUFFIX);
+				return lvStaging;
+			}
+		}
+		else{
+			if(lvName.endsWith(STAGING_SUFFIX)){
+				String pvName = lvName.substring(0, lvName.length()-STAGING_SUFFIX.length());
+				PortalAPIVersion lvProduction = apiModel.getVersion(pvName);
+				return lvProduction;
+			}
+			else{
+				return lv;
+			}
+		}
+	}
+
+	//tag_apiname:
+	private List<RefTagOccurence> getRefTagOccurences(String str, String currentAPIName) {
+		
+		ArrayList<RefTagOccurence> list = new ArrayList<RefTagOccurence>(); 
+		
+		for(Map.Entry<String,String> entry: referenceTagMap.entrySet() ){
+			String tag = entry.getKey();
+			String pageName = entry.getValue();
+			int l = tag.length();
+			int prev = 0 ;
+			for(int ind = str.indexOf(tag); ind >=0 ; ind = str.indexOf(tag, prev) ){
+				int tagEnd = ind + l;
+				String apiName = currentAPIName;
+				if(str.charAt(tagEnd)=='_'){
+					int apiNameEnd = str.indexOf(":", tagEnd);
+					apiName = str.substring(tagEnd+1, apiNameEnd);
+					prev = apiNameEnd+1;
+				}
+				else{
+					prev = tagEnd;
+				}
+				RefTagOccurence occurence = new RefTagOccurence(apiName, pageName, ind, prev);
+				list.add(occurence);
+			}
+		}
+		return list;
 	}
 
 	void uploadFiles(File folder, PortalAPIVersion version) {
@@ -383,5 +565,40 @@ public class SynchronizationManager {
 			newApisp.remove(m.getName());
 		}
 		return newApisp;
+	}
+	
+	public static class RefTagOccurence{
+		
+		public RefTagOccurence(String apiName, String pageName, int start, int end) {
+			super();
+			this.apiName = apiName;
+			this.pageName = pageName;
+			this.start = start;
+			this.end = end;
+		}
+
+		private String apiName;
+		
+		private String pageName;
+		
+		private int start;
+		
+		private int end;
+
+		public String getApiName() {
+			return apiName;
+		}
+
+		public String getPageName() {
+			return pageName;
+		}
+
+		public int getStart() {
+			return start;
+		}
+
+		public int getEnd() {
+			return end;
+		}
 	}
 }

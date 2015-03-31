@@ -6,7 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
-
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -19,6 +18,8 @@ import javax.ws.rs.core.Response;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.mulesoft.portal.apis.hlm.API;
+import com.mulesoft.portal.apis.sync.SynchronizationManager;
 import com.mulesoft.portal.apis.utils.SimpleClient;
 import com.mulesoft.portal.client.APIModel.PortalAPIVersion;
 
@@ -331,6 +332,7 @@ public class PortalClient extends SimpleClient{
 		object.put("name", title);
 		object.put("draftName", title);
 		object.put("data", content);
+		object.put("visible", true);
 		String url = "/apiplatform/repository/apis/" + version.getAPIModel().id
 				+ "/versions/" + version.id + "/portal/pages";
 		JSONObject postJSON = postJSON(url, object);
@@ -350,6 +352,14 @@ public class PortalClient extends SimpleClient{
 		JSONObject postJSON = putJSON(url, object);
 		//System.out.println(postJSON);
 	}
+	
+	public void updateAPIPortalPage(PortalPageContent page) {
+		
+		String url = page.getUrl();
+		JSONObject content = page.getContent();
+		putJSON(url, content);		
+	}
+	
 	public void deleteAPIPortalPage(PortalAPIVersion version,Long pageId) {
 		delete("/apiplatform/repository/apis/" + version.getAPIModel().id
 				+ "/versions/" + version.id + "/portal/pages/"+pageId);
@@ -363,6 +373,7 @@ public class PortalClient extends SimpleClient{
 		object.put("name", description);
 		object.put("draftName", description);
 		object.put("data", "");
+		object.put("visible", true);
 		postJSON("/apiplatform/repository/apis/" + version.getAPIModel().getId()
 				+ "/versions/" + version.id + "/portal/pages", object);		
 	}
@@ -375,6 +386,7 @@ public class PortalClient extends SimpleClient{
 		object.put("name", title);
 		object.put("draftName", title);
 		object.put("data", content);
+		object.put("visible", true);
 		String url = "/apiplatform/repository/apis/" + version.getAPIModel().getId()
 				+ "/versions/" + version.id + "/portal/pages";
 		postJSON(url, object);	
@@ -410,6 +422,7 @@ public class PortalClient extends SimpleClient{
 		JSONObject object = new JSONObject();
 		object.put("type", "console");
 		object.put("name", string);
+		object.put("visible", true);
 		postJSON("/apiplatform/repository/apis/" + version.getAPIModel().getId()
 				+ "/versions/" + version.id + "/portal/pages", object);
 	}
@@ -497,5 +510,48 @@ public class PortalClient extends SimpleClient{
 		return version;
 	}
 
+
+	public PortalMap getPortalMap(PortalAPIVersion ver) {
+		
+		PortalMap pm = new PortalMap(); 
+		
+		Long apiId = ver.getAPIModel().getId();
+		Long verId = ver.getId();
+		
+		String portalUrl = "/apiplatform/repository/apis/" + apiId + "/versions/" + verId + "/portal";
+		String apiPagesUrl = portalUrl + "/pages/";
+		String portalUrlPrefix = "/apiplatform/popular/#/portals/apis/" + apiId + "/versions/" + verId +"/pages/";
+		
+		JSONObject portalObject = getJSON(portalUrl);
+		JSONArray pages = (JSONArray) portalObject.get("pages");
+		
+		long orgId = 0;
+		
+		for(int i = 0 ; i < pages.size() ; i++){
+			JSONObject pageObject = (JSONObject) pages.get(i);
+			String pageName = (String) pageObject.get("name");
+			PortalPageContent pp = new PortalPageContent(apiPagesUrl,portalUrlPrefix, pageObject);
+			pm.registerPage(pageName, pp);
+			orgId = (long) pageObject.get("organizationId");
+		}
+		
+		String portalVersionUrl = "/apiplatform/repository/public/organizations/" + orgId + "/apis/" + apiId +"/versions/" + verId;
+		String definitionURL = portalVersionUrl + "/definition";
+		PortalPageContent definition = new PortalPageContent(SynchronizationManager.DEFINITION_PAGE_NAME, definitionURL);
+		pm.registerPage(definition.getName(), definition);		
+		
+		String rootRamlUrl = portalVersionUrl + "/files/root"; 
+		PortalPageContent rootRaml = new PortalPageContent(SynchronizationManager.ROOT_RAML_PAGE_NAME, rootRamlUrl);
+		pm.registerPage(rootRaml.getName(), rootRaml);
+		
+		return pm;
+	}
+
+
+	public void test(APIModel[] apis, API[] allApis) {
+		JSONObject json = getJSON("/accounts/api/users/me");//"/apiplatform/repository/apis/8417/versions/16469/portal");
+		System.out.println(json);
+		System.out.println(json);
+	}
 	
 }
