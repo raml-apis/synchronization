@@ -136,6 +136,16 @@ public class SynchronizationManager {
 			}
 			updateAPIIfNeeded(allAPIModels.get(a.getName()), a);
 		}
+		
+		APIModel[] newApiSet = client.getAPIs();
+		allAPIModels.clear();
+		for (APIModel q : newApiSet) {
+			allAPIModels.put(q.getName(), q);
+		}
+		HashMap<String,APIModel> portalApiMap = getAllPresentAPIs();
+		for(API a : allApis){
+			updatePortalReferences(allAPIModels.get(a.getName()),a,portalApiMap);
+		}
 
 		deleteDirectory(targetDir);
 	}
