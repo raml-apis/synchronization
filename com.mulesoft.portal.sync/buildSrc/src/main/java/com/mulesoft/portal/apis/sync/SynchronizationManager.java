@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -518,6 +519,13 @@ public class SynchronizationManager {
 				list.add(occurence);
 			}
 		}
+		Collections.sort(list, new Comparator<RefTagOccurence>() {
+
+			@Override
+			public int compare(RefTagOccurence o1, RefTagOccurence o2) {
+				return o1.getStart()-o2.getStart();
+			}
+		});
 		return list;
 	}
 
