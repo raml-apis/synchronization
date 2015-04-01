@@ -256,8 +256,12 @@ public class SynchronizationManager {
 	}
 
 	private void updatePortalReferences(APIModel apiModel, API a, HashMap<String, APIModel> portalApiMap) {
+
 		ArrayList<APIVersion> versions = a.getVersions();
 		for(APIVersion ver : versions){
+			if(ver.getNotebooks().length==0){
+				continue;
+			}
 			String branch = ver.getBranch();
 			PortalAPIVersion lastVersion = findLastVersion(apiModel, branch);
 			updatePortalReferences(apiModel, ver,  lastVersion,portalApiMap);
