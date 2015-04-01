@@ -532,7 +532,7 @@ public class PortalClient extends SimpleClient{
 			String pageName = (String) pageObject.get("name");
 			PortalPageContent pp = new PortalPageContent(apiPagesUrl,portalUrlPrefix, pageObject);
 			pm.registerPage(pageName, pp);
-			orgId = (long) pageObject.get("organizationId");
+			orgId = (Long) pageObject.get("organizationId");
 		}
 		
 		String portalVersionUrl = "/apiplatform/repository/public/organizations/" + orgId + "/apis/" + apiId +"/versions/" + verId;

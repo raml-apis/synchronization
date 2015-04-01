@@ -13,7 +13,7 @@ public class PortalPageContent {
 	public PortalPageContent(String portalPagesUrl, String displayedPagesUrl, JSONObject content) {
 		super();		
 		this.content = content;
-		this.id = (long) content.get("id");
+		this.id = (Long) content.get("id");
 		this.name = (String) content.get("name");
 		this.type = (String) content.get("type");
 		
