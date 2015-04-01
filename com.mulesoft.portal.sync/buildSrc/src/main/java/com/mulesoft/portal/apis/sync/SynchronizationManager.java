@@ -445,6 +445,9 @@ public class SynchronizationManager {
 			bld.append( content.substring(prev, occurence.getStart()) );
 			String apiName = occurence.getApiName();
 			APIModel apiModel = portalApiMap.get(apiName);
+			if(apiModel==null){
+				apiModel = version.getAPIModel();
+			}
 			
 			PortalAPIVersion latestVersion = getLatestVersion(version,apiModel);
 			
