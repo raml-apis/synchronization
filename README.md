@@ -29,7 +29,7 @@ The 'syncALLAPIs' task also expects the following parameter:
 - GITHUB_ORGANIZATION: name of the organization which contains all the repositories with RAML projects to be synchronized
  
 ## Reference tags
-Sharing portals between organizations or deploying new portal versions breaks links consistence. In order to avoid this effect you may use reference tags. These tags are recognised by the synchronization tool which replaces them by correct links in portal.
+Sharing portals between organizations or deploying new portal versions breaks links consistency. In order to avoid this effect you may use reference tags. These tags are recognised by the synchronization tool which replaces them by correct links in portal.
 
 Following reference tags are available now:
 
@@ -40,13 +40,13 @@ Following reference tags are available now:
  
 You may use reference tags to access pages of other API portals. Format is as follows:
 ```
-{TAG}_{API name as stated in root RAML}:
+{TAG}_{API title as stated in root RAML}:
 ```
 For example, that's how we initialize Google Mail client in Google Calendar notebooks:
 ```
 API.createClient('mailClient', '#REF_TAG_DEFENITION_GMail:');
 ```
-Note that Google Mail API has `GMail` name stated in RAML:
+Note that Google Mail API has `GMail` title stated in RAML:
 ```
 #%RAML 0.8
 title: GMail
