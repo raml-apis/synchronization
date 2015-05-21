@@ -27,3 +27,30 @@ All the tasks require following environmental variables:
 
 The 'syncALLAPIs' task also expects the following parameter: 
 - GITHUB_ORGANIZATION: name of the organization which contains all the repositories with RAML projects to be synchronized
+ 
+## Reference tags
+Sharing portals between organizations or deploying new portal versions breaks links consistency. In order to avoid this effect you may use reference tags. These tags are recognised by the synchronization tool which replaces them by correct links in portal.
+
+Following reference tags are available now:
+
+- `#REF_TAG_API_REFERENCE` link to the 'API reference' page
+- `#REF_TAG_DEFENITION` link to the API defenition utilized by `API.create()` method inside notebooks
+- `#REF_TAG_ROOT_RAML` link to root RAML file
+- `#REF_TAG_ABOUT_NOTEBOOKS` link to the 'About' page
+ 
+You may use reference tags to access pages of other API portals. Format is as follows:
+```
+{TAG}_{API title as stated in root RAML}:
+```
+For example, that's how we initialize Google Mail client in Google Calendar notebooks:
+```
+API.createClient('mailClient', '#REF_TAG_DEFENITION_GMail:');
+```
+Note that Google Mail API has `GMail` title stated in RAML:
+```
+#%RAML 0.8
+title: GMail
+version: v1
+baseUri: https://www.googleapis.com/gmail/{version}/users
+...
+```
